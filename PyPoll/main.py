@@ -1,51 +1,87 @@
-# The total number of votes cast
-total_votes = 0
-# A complete list of candidates who received votes
-candidate_list = []
-# The percentage of votes each candidate won
+#PyPoll
 
-# The total number of votes each candidate won
-
-# The winner of the election based on popular vote.
-
-
-# open csv
-# Modules
-import os
+# Incorporated the csv module
 import csv
 
-# Set path for file
-csvpath = os.path.join("raw_data", "election_data_1.csv")
+# Files to load and output (Remember to change these)
+file_to_load = "raw_data/election_data_2.csv"
+file_to_output = "election_analysis_2.txt"
 
-# Open the CSV
-with open(csvpath, newline="") as csvfile:
-    csvreader = csv.reader(csvfile, delimiter=",")
+# Total Vote Counter
+total_votes = 0
 
-    # Skip the first row of the csv
-    next(csvreader, None)
+# Candidate Options and Vote Counters
+candidate_options = []
+candidate_votes = {}
 
-    # Loop through 
-    for row in csvreader:
-        # count votes
-        total_votes +=1
-        # list of candidates
-        if row[2] not in candidate_list:
-            candidate_list.append(row[2])
-            
-            #loop through candidate list and make list for each candidate
-        for candidate in candidate_list: 
-            candidate = []
+# Winning Candidate and Winning Count Tracker
+winning_candidate = ""
+winning_count = 0
 
-            # count votes and append voter id to candidate list
-            if row[2] == candidate:
-                candidate.append(row[0])
-            # calculate percentage of votes per candidate
-            votes = candidate.count()
-            
+# Read the csv and convert it into a list of dictionaries
+with open(file_to_load) as election_data:
+    reader = csv.DictReader(election_data)
 
-        # winner of election
+    # For each row...
+    for row in reader:
 
-print(total_votes)
-print(candidate_list)
+        # Add to the total vote count
+        total_votes = total_votes + 1
 
+        # Extract the candidate name from each row
+        candidate_name = row["Candidate"]
 
+        # If the candidate does not match any existing candidate
+        if candidate_name not in candidate_options:
+
+            # Add it to the list of candidates in the running
+            candidate_options.append(candidate_name)
+
+            # And begin tracking that candidate's voter count
+            candidate_votes[candidate_name] = 0
+
+        # Then add a vote to that candidate's count
+        candidate_votes[candidate_name] = candidate_votes[candidate_name] + 1
+
+# Print the results and export the data to our text file
+with open(file_to_output, "w") as txt_file:
+
+    # Print the final vote count (to terminal)
+    election_results = (
+        f"\n\nElection Results\n"
+        f"-------------------------\n"
+        f"Total Votes: {total_votes}\n"
+        f"-------------------------\n")
+    print(election_results, end="")
+
+    # Save the final vote count to the text file
+    txt_file.write(election_results)
+
+    # Determine the winner by looping through the counts
+    for candidate in candidate_votes:
+
+        # Retrieve vote count and percentage
+        votes = candidate_votes.get(candidate)
+        vote_percentage = float(votes) / float(total_votes) * 100
+
+        # Determine winning vote count and candidate
+        if (votes > winning_count):
+            winning_count = votes
+            winning_candidate = candidate
+
+        # Print each candidate's voter count and percentage (to terminal)
+        voter_output = f"{candidate}: {vote_percentage:.3f}% ({votes})\n"
+        print(voter_output, end="")
+
+        # Save each candidate's voter count and percentage to text file
+        txt_file.write(voter_output)
+
+    # Print the winning candidate (to terminal)
+    winning_candidate_summary = (
+        f"-------------------------\n"
+        f"Winner: {winning_candidate}\n"
+        f"-------------------------\n")
+    print(winning_candidate_summary)
+
+    # Save the winning candidate's name to the text file
+    txt_file.write(winning_candidate_summary)
